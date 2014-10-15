@@ -2,12 +2,9 @@
 # For given date of birth extract how many days in each age class
 # ------------------------------------------------------------------
 
-# Change start and end dates to user input not excel
 # replace nas with zeros
 # example for sally with write table and read in data and source.
-# user input of classes
 # weird id as numbers not letters why?
-
 
 # Convert dates from dd/mm/yyyy format to yyyy-mm-dd
 convert.date <- function(date) {
@@ -17,22 +14,40 @@ convert.date <- function(date) {
 # Extract monthly intervals from date of birth of individual
 # to the end date of the reporting period
 get.month.intervals <- function(data, ID, DOB.col, end) {
-  seq(from = as.Date(data[ID, DOB.col]), to = end, by = "month")
+  seq(from = data[ID, DOB.col], to = end, by = "month")
 }
 
-# Work out end and start cut off dates for 3, 12 and 24 month classes
-get.cut.off.dates <- function(data, ID, DOB.col, start.col, end.col) {
-  start.cut.off.date <- get.month.intervals(data, ID, DOB.col)[c(1, 4, 13)] 
+# Extract number of age classes
+no.classes <- function(age.classes) {
+  length(age.classes)
+}
 
-  start.cut.off.date[which(start.cut.off.date > as.Date(data[ID, end.col], "%d/%m/%Y"))] <- NA
-  start.cut.off.date[which(start.cut.off.date < as.Date(data[ID, start.col], "%d/%m/%Y"))] <- as.Date(data[ID, start.col], "%d/%m/%Y")
+# Make empty data frame for cut off dates
+build.cut.off.data <- function(age.classes) {
+  cut.off.dates <- data.frame(array(dim = c(length(age.classes), 2)))
+  colnames(cut.off.dates) <- c("start", "end")
+  return(cut.off.dates)
+}
 
-  end.cut.off.date <- get.month.intervals(data, ID, DOB.col)[c(4, 13, 25)]
+# Work out end and start cut off dates for a given class
+get.cut.off.dates <- function(data, ID, DOB.col, start, end, age.classes) {
   
-  end.cut.off.date[which(end.cut.off.date > as.Date(data[ID, end.col], "%d/%m/%Y"))] <- as.Date(data[ID, end.col], "%d/%m/%Y")
-  end.cut.off.date[which(end.cut.off.date < as.Date(data[ID, start.col], "%d/%m/%Y"))] <- NA
+  for (x in seq_along(age.classes)) {
+    
+    cut.off.dates$start[x] <- as.character(get.month.intervals(data, ID, DOB.col, end)[age.classes[[x]][1] + 1])
+    cut.off.dates$end[x] <- as.character(get.month.intervals(data, ID, DOB.col, end)[age.classes[[x]][2] + 1])
+ 
+    # Some tidying needed to stop cut offs going beyond the reporting period
+    if (is.na(cut.off.dates$start[x])) {
+      cut.off.dates$start[x] <- as.character(start)
+    }
 
-  list(start = start.cut.off.date, end = end.cut.off.date)
+    if (is.na(cut.off.dates$end[x])) {
+      cut.off.dates$end[x] <- as.character(end)
+    }
+  }
+
+  return(cut.off.dates)
 }
 
 # Calculate number of days spent in a category with a given start 
@@ -125,4 +140,7 @@ source("cowsgopoo.R")
 myherd <- data.frame(cowID = c("a", "b", "c", "d"), 
 	                 dob = c("13/01/2013", "20/06/2013", "27/11/2010", "01/11/2013"))
 
-cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", end = "31/12/2013")
+myclasses <- list(c(0, 3), c(3, 12), c(12, 24), c(24, NA))
+
+cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", end = "31/12/2013",
+          age.classes = myclasses)

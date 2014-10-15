@@ -1,0 +1,8 @@
+bibentry("Article",
+   title = "Cowsgopoo: An R package",
+   author = c(person("Natalie", "Cooper"), person ("Sally", "Gadsdon")),
+   journal = "Evolution",
+   number      = "X",
+   year   = "in press",
+   pages   = "xx-xx",
+   mheader = "To cite SPELT in publications please use:")

@@ -1,10 +1,6 @@
 # cowsgopoo: for all your grazing herd nitrogen deposition needs
 
-[![Build Status](https://travis-ci.org/nhcooper123/SPELT.png?branch=master)](https://travis-ci.org/nhcooper123/SPELT)
-
-[![Build Status](https://zenodo.org/badge/4008/nhcooper123/SPELT.png)](https://github.com/nhcooper123/SPELT/releases)
-
-This repository contains functions needed to use cowsgopoo. 
+This repository contains functions needed to use cowsgopoo. Still a work in progress so please don't try and use it just yet...
 
 ## Installing cowsgopoo
 

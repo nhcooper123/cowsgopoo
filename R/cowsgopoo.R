@@ -8,10 +8,16 @@
 # user input of classes
 # weird id as numbers not letters why?
 
+
+# Convert dates from dd/mm/yyyy format to yyyy-mm-dd
+convert.date <- function(date) {
+  as.Date(date, "%d/%m/%Y")
+}
+
 # Extract monthly intervals from date of birth of individual
 # to the end date of the reporting period
-get.month.intervals <- function(data, ID, DOB.col) {
-  seq(from = as.Date(data[ID, DOB.col], "%d/%m/%Y"), length.out = 25, by = "month")
+get.month.intervals <- function(data, ID, DOB.col, end) {
+  seq(from = as.Date(data[ID, DOB.col]), to = end, by = "month")
 }
 
 # Work out end and start cut off dates for 3, 12 and 24 month classes
@@ -61,23 +67,31 @@ cowsgopoo <- function(data, ID, DOB, start, end) {
   if (!is.data.frame(data)) 
     stop("'data' must be an object of class 'data.frame'")
 
-  # Define variables
+  # Define variable columns
   ID.col <- column.ID(data, ID)
+
+  DOB.col <- column.ID(data, DOB)
+  
+  # Check that all required variables were entered
   if (length(ID.col) == 0)
     stop("ID variable not found in data")  
 
-  DOB.col <- column.ID(data, DOB)
   if (length(DOB.col) == 0)
     stop("Date of birth variable not found in data")  
 
-  start.col <- column.ID(data, start)
-  if (length(start.col) == 0)
-    stop("Start date variable not found in data")  
+  if (length(start) == 0)
+    stop("Start date not entered")  
 
-  end.col <- column.ID(data, end)
-  if (length(end.col) == 0)
-    stop("End date variable not found in data") 
+  if (length(end) == 0)
+    stop("End date not entered") 
 
+  # Convert dates to R useable format
+  data[, DOB.col] <- convert.date(data[, DOB.col])
+
+  start <- convert.date(start)
+ 
+  end <- convert.date(end)
+ 
   # Build empty output file = number of days in each class, plus ID of cow
   cow.data <- build.data(data, ID.col)
 
@@ -109,7 +123,6 @@ cowsgopoo <- function(data, ID, DOB, start, end) {
 source("cowsgopoo.R")
 
 myherd <- data.frame(cowID = c("a", "b", "c", "d"), 
-	                 dob = c("13/01/2013", "20/06/2013", "27/11/2010", "01/11/2013"),
-	                 start = c("01/01/2013"), end = c("31/12/2013"))
+	                 dob = c("13/01/2013", "20/06/2013", "27/11/2010", "01/11/2013"))
 
-cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "start", end = "end")
+cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", end = "31/12/2013")

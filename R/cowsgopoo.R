@@ -6,6 +6,11 @@
 # example for sally with write table and read in data and source.
 # weird id as numbers not letters why?
 
+# Identify column numbers
+column.ID <- function(data, column.name) { 
+  which(names(data) == column.name)
+} 
+
 # Convert dates from dd/mm/yyyy format to yyyy-mm-dd
 convert.date <- function(date) {
   as.Date(date, "%d/%m/%Y")
@@ -13,8 +18,8 @@ convert.date <- function(date) {
 
 # Extract monthly intervals from date of birth of individual
 # to the end date of the reporting period
-get.month.intervals <- function(data, ID, DOB.col, end) {
-  seq(from = data[ID, DOB.col], to = end, by = "month")
+get.month.intervals <- function(data, ID, DOB.col, end.date) {
+  seq(from = data[ID, DOB.col], to = end.date, by = "month")
 }
 
 # Extract number of age classes
@@ -30,42 +35,61 @@ build.cut.off.data <- function(age.classes) {
 }
 
 # Work out end and start cut off dates for a given class
-get.cut.off.dates <- function(data, ID, DOB.col, start, end, age.classes) {
-  
+# With some tidying needed to stop cut offs going beyond the reporting period
+get.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, 
+                              age.classes, cut.off.dates) {
   for (x in seq_along(age.classes)) {
-    
-    cut.off.dates$start[x] <- as.character(get.month.intervals(data, ID, DOB.col, end)[age.classes[[x]][1] + 1])
-    cut.off.dates$end[x] <- as.character(get.month.intervals(data, ID, DOB.col, end)[age.classes[[x]][2] + 1])
- 
-    # Some tidying needed to stop cut offs going beyond the reporting period
+    cut.off.dates$start[x] <- as.character(get.month.intervals(data, ID, DOB.col, end.date)
+                                           [age.classes[[x]][1] + 1])
+    cut.off.dates$end[x] <- as.character(get.month.intervals(data, ID, DOB.col, end.date)
+                                         [age.classes[[x]][2] + 1])
     if (is.na(cut.off.dates$start[x])) {
-      cut.off.dates$start[x] <- as.character(start)
+      cut.off.dates$start[x] <- as.character(start.date)
     }
-
     if (is.na(cut.off.dates$end[x])) {
-      cut.off.dates$end[x] <- as.character(end)
+      cut.off.dates$end[x] <- as.character(end.date)
     }
   }
-
   return(cut.off.dates)
 }
 
 # Calculate number of days spent in a category with a given start 
 # and end date
-get.days.in.class <- function(start.cut.off.date, end.cut.off.date) {
-  as.numeric(difftime(end.cut.off.date, start.cut.off.date, units = "days"))
+get.days.in.class <- function(start, end) {
+  as.numeric(difftime(as.Date(end), as.Date(start), units = "days"))
 }
 
-# Identify column numbers
-column.ID <- function(data, column.name) { 
-  which(names(data) == column.name)
-}	
+# Build empty data frame for days in age class output
+#build.days.data <- function(age.classes) {
+ # cow.data <- data.frame(array(dim = c(length(data[, ID.col]), 4)))
+ # colnames(cow.data) <- c("ID", "zero.three.month_days", "three.twelve.month_days", 
+  #    "twelve.twentyfour.month_days")
+  
+  #return(cow.data)
+#}
+
+# Calculate number of days spent in a category with a given start 
+# and end date for all categories
+
+get.days.in.all.classes <- function(cut.off.dates, age.classes, cow.data) {
+  for (i in seq_along(age.classes)) {
+    cowdata$class[i] <- age.classes[]
+    cowdata$days.in.class[i] <- get.days.in.class(cut.off.dates$start[i], cut.off.dates$end[i])
+  }
+}
+
+branch.length.pair <- function(age.classes, cut.off.dates) {
+  sapply(cut.off.dates, function(x) 
+         get.days.in.class(cut.off.dates$start, cut.off.dates$end))
+}
+
+
 
 # Build empty dataframe for output
 build.data <- function(data, ID.col) {
   cow.data <- data.frame(array(dim = c(length(data[, ID.col]), 4)))
   colnames(cow.data) <- c("ID", "zero.three.month_days", "three.twelve.month_days", 
-    	"twelve.twentyfour.month_days")
+      "twelve.twentyfour.month_days")
   
   return(cow.data)
 }
@@ -77,35 +101,28 @@ build.data <- function(data, ID.col) {
 # period.
 # --------------------------------------------------------
 
-cowsgopoo <- function(data, ID, DOB, start, end) {
-
+cowsgopoo <- function(data, ID, DOB, start.date, end.date) {
   if (!is.data.frame(data)) 
     stop("'data' must be an object of class 'data.frame'")
 
   # Define variable columns
   ID.col <- column.ID(data, ID)
-
   DOB.col <- column.ID(data, DOB)
   
   # Check that all required variables were entered
   if (length(ID.col) == 0)
     stop("ID variable not found in data")  
-
   if (length(DOB.col) == 0)
     stop("Date of birth variable not found in data")  
-
-  if (length(start) == 0)
+  if (length(start.date) == 0)
     stop("Start date not entered")  
-
-  if (length(end) == 0)
+  if (length(end.date) == 0)
     stop("End date not entered") 
 
   # Convert dates to R useable format
   data[, DOB.col] <- convert.date(data[, DOB.col])
-
-  start <- convert.date(start)
- 
-  end <- convert.date(end)
+  start.date <- convert.date(start.date)
+  end.date <- convert.date(end.date)
  
   # Build empty output file = number of days in each class, plus ID of cow
   cow.data <- build.data(data, ID.col)

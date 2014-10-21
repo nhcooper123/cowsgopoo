@@ -22,11 +22,6 @@ get.month.intervals <- function(data, ID, DOB.col, end.date) {
   seq(from = data[ID, DOB.col], to = end.date, by = "month")
 }
 
-# Extract number of age classes
-no.classes <- function(age.classes) {
-  length(age.classes)
-}
-
 # Make empty data frame for cut off dates
 build.cut.off.data <- function(age.classes) {
   cut.off.dates <- data.frame(array(dim = c(length(age.classes), 2)))
@@ -35,62 +30,100 @@ build.cut.off.data <- function(age.classes) {
 }
 
 # Work out end and start cut off dates for a given class
-# With some tidying needed to stop cut offs going beyond the reporting period
 get.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, 
                               age.classes, cut.off.dates) {
   for (x in seq_along(age.classes)) {
     cut.off.dates$start[x] <- as.character(get.month.intervals(data, ID, DOB.col, end.date)
                                            [age.classes[[x]][1] + 1])
     cut.off.dates$end[x] <- as.character(get.month.intervals(data, ID, DOB.col, end.date)
-                                         [age.classes[[x]][2] + 1])
-    if (is.na(cut.off.dates$start[x])) {
-      cut.off.dates$start[x] <- as.character(start.date)
-    }
-    if (is.na(cut.off.dates$end[x])) {
-      cut.off.dates$end[x] <- as.character(end.date)
-    }
+                                         [age.classes[[x]][2] + 1]) 
   }
   return(cut.off.dates)
 }
 
+# Replace dates with NAs for animals with start dates for age classes 
+# outside the reporting period 
+
+fix.start.dates <- function(start.date, age.classes, cut.off.dates) {
+  for (x in seq_along(age.classes)) {
+    if (!is.na(cut.off.dates$start[x])) {
+      if (cut.off.dates$start[x] < start.date) {
+          cut.off.dates$start[x] <- NA
+      }
+    }
+  }  
+  return(cut.off.dates)
+}
+
+# Replace dates with NAs for animals with end dates for age classes 
+# outside the reporting period 
+
+fix.end.dates <- function(end.date, age.classes, cut.off.dates) {
+  for (x in seq_along(age.classes)) {
+    if (!is.na(cut.off.dates$end[x])) {
+      if (cut.off.dates$end[x] < end.date) {
+          cut.off.dates$end[x] <- NA
+      }
+    }
+  }  
+  return(cut.off.dates)
+}
+
+# where there is a start but no end date replace with end date of period
+
+
+   # if (is.na(cut.off.dates$start[x])) {
+    #  cut.off.dates$start[x] <- as.character(start.date)
+    #}
+    #if (is.na(cut.off.dates$end[x])) {
+     # cut.off.dates$end[x] <- as.character(end.date)
+    #}
+
+# Make cut off dates data frame and fill it
+fill.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.classes) {
+  cut.off.dates <- build.cut.off.data(age.classes)
+  cut.off.dates <- get.cut.off.dates(data, ID, DOB.col, start.date, end.date, 
+                              age.classes, cut.off.dates)
+  return(cut.off.dates)
+}
+
+
 # Calculate number of days spent in a category with a given start 
 # and end date
 get.days.in.class <- function(start, end) {
-  as.numeric(difftime(as.Date(end), as.Date(start), units = "days"))
+  as.numeric(difftime(start, end, units = "days"))
 }
 
 # Build empty data frame for days in age class output
-#build.days.data <- function(age.classes) {
- # cow.data <- data.frame(array(dim = c(length(data[, ID.col]), 4)))
- # colnames(cow.data) <- c("ID", "zero.three.month_days", "three.twelve.month_days", 
-  #    "twelve.twentyfour.month_days")
-  
-  #return(cow.data)
-#}
+build.days.data <- function(age.classes) {
+  days.data <- data.frame(array(dim = c(length(age.classes), 3)))
+  colnames(days.data) <- c("start.age", "end.age", "days.in.class")
+  return(days.data)
+}
 
 # Calculate number of days spent in a category with a given start 
 # and end date for all categories
-
-get.days.in.all.classes <- function(cut.off.dates, age.classes, cow.data) {
+get.days.in.all.classes <- function(cut.off.dates, age.classes, days.data) {
   for (i in seq_along(age.classes)) {
-    cowdata$class[i] <- age.classes[]
-    cowdata$days.in.class[i] <- get.days.in.class(cut.off.dates$start[i], cut.off.dates$end[i])
+    days.data$start.age[i] <- age.classes[[i]][1]
+    days.data$end.age[i] <- age.classes[[i]][2]
+    days.data$days.in.class[i] <- get.days.in.class(as.Date(cut.off.dates$end[i]), 
+                                                    as.Date(cut.off.dates$start[i]))
   }
+  return(days.data)
 }
 
-branch.length.pair <- function(age.classes, cut.off.dates) {
-  sapply(cut.off.dates, function(x) 
-         get.days.in.class(cut.off.dates$start, cut.off.dates$end))
+# Make days data frame and fill it
+fill.days.in.all.classes <- function(cut.off.dates, age.classes) {
+  days.data <- build.days.data(age.classes)
+  days.data <- get.days.in.all.classes(cut.off.dates, age.classes, days.data)
+  return(days.data)
 }
-
-
 
 # Build empty dataframe for output
 build.data <- function(data, ID.col) {
-  cow.data <- data.frame(array(dim = c(length(data[, ID.col]), 4)))
-  colnames(cow.data) <- c("ID", "zero.three.month_days", "three.twelve.month_days", 
-      "twelve.twentyfour.month_days")
-  
+  cow.data <- data.frame(array(dim = c(length(data[, ID.col]), (length(age.classes) + 1)))
+  colnames(cow.data) <- c("ID", paste("age class", seq(from = 1, to = length(age.classes), by = 1)))
   return(cow.data)
 }
 
@@ -131,21 +164,18 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date) {
   for(ID in seq_along(data[, ID.col])) {
   
     # Get start and end cut off dates for three categories
-    cut.off.dates.list <- get.cut.off.dates(data, ID, DOB.col, start.col, end.col)
+    cut.off.dates.list <- fill.cut.off.dates(data, ID, DOB.col, start.date, end.date, age.classes)
 
     # Extract number of days in each class
-    days.in.class <- get.days.in.class(cut.off.dates.list$start, cut.off.dates.list$end)
+    days.in.class <- fill.days.in.all.classes(cut.off.dates.list, age.classes)
 
     # Outputs
     cow.data$ID[ID] <- data[, ID.col][ID]
     cow.data$zero.three.month_days[ID] <- days.in.class[1]
     cow.data$three.twelve.month_days[ID] <- days.in.class[2]
     cow.data$twelve.twentyfour.month_days[ID] <- days.in.class[3]
-
   }
-
   return(cow.data)
-
 }
 
 # ---------------------------

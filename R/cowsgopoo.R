@@ -61,7 +61,7 @@ fix.start.dates <- function(start.date, age.classes, cut.off.dates) {
 fix.end.dates <- function(end.date, age.classes, cut.off.dates) {
   for (x in seq_along(age.classes)) {
     if (!is.na(cut.off.dates$end[x])) {
-      if (cut.off.dates$end[x] < end.date) {
+      if (cut.off.dates$end[x] > end.date) {
           cut.off.dates$end[x] <- NA
       }
     }
@@ -69,15 +69,16 @@ fix.end.dates <- function(end.date, age.classes, cut.off.dates) {
   return(cut.off.dates)
 }
 
-# where there is a start but no end date replace with end date of period
-
-
-   # if (is.na(cut.off.dates$start[x])) {
-    #  cut.off.dates$start[x] <- as.character(start.date)
-    #}
-    #if (is.na(cut.off.dates$end[x])) {
-     # cut.off.dates$end[x] <- as.character(end.date)
-    #}
+# Where there is a start date but no end date,
+# replace with end date of period
+fix.missing.end.dates <- function(end.date, age.classes, cut.off.dates) {
+  for (x in seq_along(age.classes)) {
+    if (!is.na(cut.off.dates$start[x]) & is.na(cut.off.dates$end[x])) {
+      cut.off.dates$end[x] <- as.character(end.date)
+    }
+  } 
+  return(cut.off.dates) 
+}
 
 # Make cut off dates data frame and fill it
 fill.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.classes) {
@@ -87,6 +88,13 @@ fill.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.clas
   return(cut.off.dates)
 }
 
+# Make cut off dates data frame, fill it and fix all the dates
+add.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.classes) {
+  cut.off.dates <- fill.cut.off.dates(data, ID, DOB.col, start.date, end.date, age.classes)
+  cut.off.dates <- fix.start.dates(start.date, age.classes, cut.off.dates)
+  cut.off.dates <- fix.end.dates(end.date, age.classes, cut.off.dates)
+  cut.off.dates <- fix.missing.end.dates(end.date, age.classes, cut.off.dates)
+}
 
 # Calculate number of days spent in a category with a given start 
 # and end date
@@ -122,7 +130,7 @@ fill.days.in.all.classes <- function(cut.off.dates, age.classes) {
 
 # Build empty dataframe for output
 build.data <- function(data, ID.col) {
-  cow.data <- data.frame(array(dim = c(length(data[, ID.col]), (length(age.classes) + 1)))
+  cow.data <- data.frame(array(dim = c(length(data[, ID.col]), (length(age.classes) + 1))))
   colnames(cow.data) <- c("ID", paste("age class", seq(from = 1, to = length(age.classes), by = 1)))
   return(cow.data)
 }
@@ -164,16 +172,16 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date) {
   for(ID in seq_along(data[, ID.col])) {
   
     # Get start and end cut off dates for three categories
-    cut.off.dates.list <- fill.cut.off.dates(data, ID, DOB.col, start.date, end.date, age.classes)
+    cut.off.dates.list <- add.cut.off.dates(data, ID, DOB.col, start.date, end.date, age.classes)
 
     # Extract number of days in each class
     days.in.class <- fill.days.in.all.classes(cut.off.dates.list, age.classes)
 
     # Outputs
     cow.data$ID[ID] <- data[, ID.col][ID]
-    cow.data$zero.three.month_days[ID] <- days.in.class[1]
-    cow.data$three.twelve.month_days[ID] <- days.in.class[2]
-    cow.data$twelve.twentyfour.month_days[ID] <- days.in.class[3]
+    for (z in seq_along(age.classes)) {
+      cow.data[ID, z] <- days.in.class[, z]
+    }  
   }
   return(cow.data)
 }

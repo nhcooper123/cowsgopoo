@@ -1,0 +1,267 @@
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{{#1}}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{{#1}}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{{#1}}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{{#1}}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{{#1}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{{#1}}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{{#1}}}
+\newcommand{\RegionMarkerTok}[1]{{#1}}
+\newcommand{\ErrorTok}[1]{\textbf{{#1}}}
+\newcommand{\NormalTok}[1]{{#1}}
+\usepackage{graphicx}
+% Redefine \includegraphics so that, unless explicit options are
+% given, the image width will not exceed the width of the page.
+% Images get their normal width if they fit onto the page, but
+% are scaled down if they would overflow the margins.
+\makeatletter
+\def\ScaleIfNeeded{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+\let\Oldincludegraphics\includegraphics
+{%
+ \catcode`\@=11\relax%
+ \gdef\includegraphics{\@ifnextchar[{\Oldincludegraphics}{\Oldincludegraphics[width=\ScaleIfNeeded]}}%
+}%
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+%\setcounter{secnumdepth}{0}
+\usepackage{fullpage}
+\usepackage{framed}
+\usepackage{mathtools}
+\usepackage[osf]{mathpazo} % palatino
+\usepackage{float}
+
+\begin{document}
+
+\title{cowsgopoo: Simple instructions for practitioners}
+\author{Natalie Cooper (ncooper@tcd.ie) and Sally Gadsdon}
+\date{}
+\maketitle
+
+cowsgopoo is a simple R package designed to allow easier calculation of Nitrogen depositions
+on fields by herds of cattle. This vignette will explain how to use the package and assumes
+minimal knowledge of R.
+
+Throughout, R code will be in shaded boxes:
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{source}\NormalTok{(}\StringTok{"cowsgopoo"}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
+
+R output will be preceded by \texttt{\#\#} and important comments will be in boxes.
+
+\begin{framed}
+To use cowsgopoo for the first time you will need to be connected to the internet. However, after the initial download you will be able to use it offline.
+\end{framed}
+
+\section{Set up}
+
+\subsection{Required data format}
+
+Your data set needs to contain two columns: an column with some form of identifier for each animal, and a column with the dates of birth of the animals. There can be other columns in the dataset as these will be ignored by the function. However, there should only be one row for each animal.\\
+
+Dates of birth should be in the format: dd/mm/yyyy\\
+
+IDs can be any format.\\
+
+\subsection{Making a folder and finding its path}
+
+Create a new folder which we'll call
+``RAnalyses''. Put your data into this folder. 
+You'll need to know what the \textbf{path} of the folder is. 
+For example on Natalie's Windows machine, the path is:
+
+\begin{snugshade}
+\texttt{C:/Users/Natalie/Desktop/RAnalyses}
+\end{snugshade}
+
+The path is really easy to find in a Windows machine, just click on the
+address bar of the folder and the whole path will appear.
+
+\begin{framed}
+In Windows, paths usually include \textbackslash{} but R
+can't read these. It's easy to fix in your R code, just change any \textbackslash{} in
+the path to / or \textbackslash{}\textbackslash{}.
+\end{framed}
+
+On Natalie's Mac the path is:
+
+\begin{snugshade}
+\texttt{\textasciitilde{}/Desktop/RAnalyses}
+\end{snugshade}
+
+It's a bit trickier to find the path on a Mac, so Google for help if you need it. 
+Note that the tilde \textasciitilde{} is a shorthand for /Users/Natalie. 
+
+\subsection{Reading your data into R}
+
+Next we need to load the data we are going to use for the analysis. R
+can read files in lots of formats, including comma-delimited and
+tab-delimited files. Excel (and many other applications) can output
+files in this format (it's an option in the ``Save As'' dialog box
+under the ``File'' menu). Here let's assume you have a file called ``HerdData.txt''
+which we are going to use. Load these data as follows. 
+
+\begin{framed}
+You will need to replace MYPATH with the name of the path to the folder 
+containing the data on your computer.
+\end{framed}
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\NormalTok{myherd <-}\StringTok{ }\KeywordTok{read.table}\NormalTok{(}\StringTok{"MYPATH/HerdData.txt"}\NormalTok{, }\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }
+                          \DataTypeTok{header =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
+
+Note that \texttt{sep = "\textbackslash{}t"} indicates that you have a tab-delimited file, 
+\texttt{sep = ","}  would indicate a comma-delimited csv file. You can also use
+\texttt{read.delim} for tab delimited files or \texttt{read.csv} for comma delimited
+files. \texttt{header = TRUE}, indicates that the first line of the data contains
+column headings.
+
+This is a good point to note that unless you \textbf{tell} R you want to
+do something, it won't do it automatically. So here if you successfully
+entered the data, R won't give you any indication that it worked.
+Instead you need to specifically ask R to look at the data.
+
+We can look at the data by typing:
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{str}\NormalTok{(myherd)}
+\end{Highlighting}
+\end{snugshade}
+
+\begin{verbatim}
+## 'data.frame':    77 obs. of  8 variables:
+
+\end{verbatim}
+
+This shows the structure of the data frame (this can be a really useful
+command when you have a big data file). It also tells you what kind of
+variables R thinks you have (characters, integers, numeric, factors
+etc.). Some R functions need the data to be certain kinds of variables
+so it's useful to check this.
+
+As you can see, the data contains the following variables: cowID and dob 
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{head}\NormalTok{(myherd)}
+\end{Highlighting}
+\end{snugshade}
+
+\begin{verbatim}
+##      Order      Family           Binomial AdultBodyMass_g GestationLen_d
+
+\end{verbatim}
+
+This gives you the first few rows of data along with the column
+headings.
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{names}\NormalTok{(myherd)}
+\end{Highlighting}
+\end{snugshade}
+
+\subsection{Downloading cowsgopoo from GitHub}
+
+You can install the cowsgopoo package via a website called GitHub. Note that once you've done this once, you don't need to do it ever again and you can use the code offline after this step.
+
+% FIX FIX FIX
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{install.packages}\NormalTok{(cowsgopoo)}
+\end{Highlighting}
+\end{snugshade}
+
+\subsection{Loading the cowsgopoo package in R}
+
+You've installed cowsgopoo but packages don't automatically get loaded
+into your R session. Instead you need to tell R to load them \textbf{every
+time} you start a new R session and want to use functions from these
+packages. To load the package \texttt{cowsgopoo} into your current R session:
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(cowsgopoo)}
+\end{Highlighting}
+\end{snugshade}
+
+\section{Running a cowsgopoo analysis}
+
+\subsection{Setting your age classes}
+
+cowsgopoo is designed to work with a set of user defined age classes. So you can input whatever age classes you need for your forms. 
+
+\subsection{Running an analysis}
+
+
+\subsection{Writing your output to a file}
+
+You can save your output as a file, rather than seeing the results in your R window. This works the same as above but we give the results a name by using the <- function. We then tell R to write a file of this data. The data will appear in your folder "RAnalyses".
+
+This will create a .csv file that can be opened in Excel. Just right click and choose "Open With" and select Excel. Otherwise the file will open in your text editor.
+
+\end{document}

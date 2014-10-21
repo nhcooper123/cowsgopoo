@@ -2,9 +2,7 @@
 # For given date of birth extract how many days in each age class
 # ------------------------------------------------------------------
 
-# replace nas with zeros
 # example for sally with write table and read in data and source.
-# weird id as numbers not letters why?
 
 # Identify column numbers
 column.ID <- function(data, column.name) { 
@@ -104,8 +102,8 @@ get.days.in.class <- function(start, end) {
 
 # Build empty data frame for days in age class output
 build.days.data <- function(age.classes) {
-  days.data <- data.frame(array(dim = c(length(age.classes), 3)))
-  colnames(days.data) <- c("start.age", "end.age", "days.in.class")
+  days.data <- data.frame(array(dim = c(length(age.classes), 1)))
+  colnames(days.data) <- c("days.in.class")
   return(days.data)
 }
 
@@ -113,10 +111,12 @@ build.days.data <- function(age.classes) {
 # and end date for all categories
 get.days.in.all.classes <- function(cut.off.dates, age.classes, days.data) {
   for (i in seq_along(age.classes)) {
-    days.data$start.age[i] <- age.classes[[i]][1]
-    days.data$end.age[i] <- age.classes[[i]][2]
     days.data$days.in.class[i] <- get.days.in.class(as.Date(cut.off.dates$end[i]), 
                                                     as.Date(cut.off.dates$start[i]))
+    # Replace NAs with zeros as they represent no days spent in an age class
+    if(is.na(days.data$days.in.class[i])) {
+      days.data$days.in.class[i] <- 0
+    }
   }
   return(days.data)
 }
@@ -142,7 +142,7 @@ build.data <- function(data, ID.col) {
 # period.
 # --------------------------------------------------------
 
-cowsgopoo <- function(data, ID, DOB, start.date, end.date) {
+cowsgopoo <- function(data, ID, DOB, start.date, end.date, age.classes) {
   if (!is.data.frame(data)) 
     stop("'data' must be an object of class 'data.frame'")
 
@@ -178,24 +178,40 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date) {
     days.in.class <- fill.days.in.all.classes(cut.off.dates.list, age.classes)
 
     # Outputs
-    cow.data$ID[ID] <- data[, ID.col][ID]
-    for (z in seq_along(age.classes)) {
-      cow.data[ID, z] <- days.in.class[, z]
-    }  
+    cow.data$ID[ID] <- as.character(data[, ID.col][ID])
+    cow.data[ID, 2:(length(age.classes) + 1)] <- days.in.class$days.in.class 
   }
   return(cow.data)
 }
 
 # ---------------------------
-# Example
+# Official Example
 # ---------------------------
 
 source("cowsgopoo.R")
 
+# Example dataset with IDs (cowID) a-d and random dates of birth (dob)
 myherd <- data.frame(cowID = c("a", "b", "c", "d"), 
 	                 dob = c("13/01/2013", "20/06/2013", "27/11/2010", "01/11/2013"))
 
-myclasses <- list(c(0, 3), c(3, 12), c(12, 24), c(24, NA))
+myclasses <- list(c(0, 3), c(3, 12), c(12, 24), c(24, 1000))
 
 cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", end = "31/12/2013",
           age.classes = myclasses)
+
+# ------------------------------------
+# Example reading in data from a file
+# ------------------------------------
+
+source("MYPATH/cowsgopoo.R")
+
+myherd <- read.table("MYPATH/MyData.csv", sep = ",")
+
+myclasses <- list(c(0, 3), c(3, 12), c(12, 24), c(24, 1000))
+
+myresults <- cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", 
+                       end = "31/12/2013", age.classes = myclasses)
+
+write.table(file = "MyResultsFile.csv", myresults, sep = ",", quote = FALSE, 
+            col.names = TRUE, row.names = FALSE)
+

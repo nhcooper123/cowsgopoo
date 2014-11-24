@@ -129,7 +129,7 @@ fill.days.in.all.classes <- function(cut.off.dates, age.classes) {
 }
 
 # Build empty dataframe for output
-build.data <- function(data, ID.col) {
+build.data <- function(data, ID.col, age.classes) {
   cow.data <- data.frame(array(dim = c(length(data[, ID.col]), (length(age.classes) + 1))))
   colnames(cow.data) <- c("ID", paste("age class", seq(from = 1, to = length(age.classes), by = 1)))
   return(cow.data)
@@ -166,7 +166,7 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date, age.classes) {
   end.date <- convert.date(end.date)
  
   # Build empty output file = number of days in each class, plus ID of cow
-  cow.data <- build.data(data, ID.col)
+  cow.data <- build.data(data, ID.col, age.classes)
 
   # Loop through each cow and add results to output
   for(ID in seq_along(data[, ID.col])) {

@@ -45,8 +45,11 @@ get.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date,
 fix.start.dates <- function(start.date, age.classes, cut.off.dates) {
   for (x in seq_along(age.classes)) {
     if (!is.na(cut.off.dates$start[x])) {
-      if (cut.off.dates$start[x] < start.date) {
+      if (cut.off.dates$start[x] < start.date & cut.off.dates$end[x] < start.date) {
           cut.off.dates$start[x] <- NA
+      } 
+      if (cut.off.dates$start[x] < start.date & cut.off.dates$end[x] > start.date) {
+          cut.off.dates$start[x] <- start.date   
       }
     }
   }  
@@ -183,6 +186,23 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date, age.classes) {
   }
   return(cow.data)
 }
+
+#Faffing
+
+data <- myherd
+age.classes <- list(c(0, 3), c(3, 12), c(12, 24), c(24, 1000))
+start.date <- convert.date("01/01/2013")
+end.date <- convert.date("31/12/2013")
+ID.col <- 1
+DOB.col <- 2
+data[, DOB.col] <- convert.date(data[, DOB.col])
+
+cut.off.dates <- data.frame(array(dim = c(length(age.classes), 2)))
+colnames(cut.off.dates) <- c("start", "end")
+
+get.cut.off.dates(data, 3, DOB.col, start.date, end.date, 
+                              age.classes, cut.off.dates) 
+
 
 # ---------------------------
 # Official Example

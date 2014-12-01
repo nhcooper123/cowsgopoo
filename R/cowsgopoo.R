@@ -137,7 +137,7 @@ age.classes.table <- function(age.classes) {
 }
 
 # Getting the total days in each age class
-cow.totals <- function(cow.data) {
+cow.totals <- function(cow.data, ID.col) {
   colSums(cow.data[, -ID.col])
 }
 
@@ -191,37 +191,9 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date, age.classes) {
     cow.data[ID, 2:(length(age.classes) + 1)] <- days.in.class$days.in.class   
   }
   # Overall outputs
-  cow.results <- list(results = cow.data, totals = cow.totals(cow.data), 
+  cow.results <- list(results = cow.data, totals = cow.totals(cow.data, ID.col), 
                       age.classes = age.classes.table(age.classes), start.date = start.date, 
                       end.date = end.date, reporting.period = end.date - start.date,
                       number.individuals = length(unique(cow.data$ID))) 
   return(cow.results)
 }
-
-# Example
-
-# Example dataset with IDs (cowID) a-d and random dates of birth (dob)
-myherd <- data.frame(cowID = c("a", "b", "c", "d"), 
-	                 dob = c("13/01/2013", "20/06/2013", "27/11/2010", "01/11/2013"))
-
-myclasses <- list(c(0, 3), c(3, 12), c(12, 24), c(24, 1000))
-
-cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", end = "31/12/2013",
-          age.classes = myclasses)
-
-# ------------------------------------
-# Example reading in data from a file
-# ------------------------------------
-
-source("MYPATH/cowsgopoo.R")
-
-myherd <- read.table("MYPATH/MyData.csv", sep = ",")
-
-myclasses <- list(c(0, 3), c(3, 12), c(12, 24), c(24, 1000))
-
-myresults <- cowsgopoo(data = myherd, ID = "cowID", DOB = "dob", start = "01/01/2013", 
-                       end = "31/12/2013", age.classes = myclasses)
-
-write.table(file = "MyResultsFile.csv", myresults, sep = ",", quote = FALSE, 
-            col.names = TRUE, row.names = FALSE)
-

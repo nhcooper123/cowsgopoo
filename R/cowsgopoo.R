@@ -46,24 +46,10 @@ fix.start.dates <- function(start.date, age.classes, cut.off.dates) {
   for (x in seq_along(age.classes)) {
     if (!is.na(cut.off.dates$start[x])) {
       if (cut.off.dates$start[x] < start.date & cut.off.dates$end[x] < start.date) {
-          cut.off.dates$start[x] <- NA
+        cut.off.dates$start[x] <- NA
       } 
       if (cut.off.dates$start[x] < start.date & cut.off.dates$end[x] > start.date) {
-          cut.off.dates$start[x] <- start.date   
-      }
-    }
-  }  
-  return(cut.off.dates)
-}
-
-# Replace dates with NAs for animals with end dates for age classes 
-# outside the reporting period 
-
-fix.end.dates <- function(end.date, age.classes, cut.off.dates) {
-  for (x in seq_along(age.classes)) {
-    if (!is.na(cut.off.dates$end[x])) {
-      if (cut.off.dates$end[x] > end.date) {
-          cut.off.dates$end[x] <- NA
+        cut.off.dates$start[x] <- as.character(start.date)   
       }
     }
   }  
@@ -90,11 +76,11 @@ fill.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.clas
 }
 
 # Make cut off dates data frame, fill it and fix all the dates
-add.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.classes) {
+add.cut.off.dates <- function(data, ID, DOB.col, start.date, end.date, age.classes, cut.off.dates) {
   cut.off.dates <- fill.cut.off.dates(data, ID, DOB.col, start.date, end.date, age.classes)
-  cut.off.dates <- fix.start.dates(start.date, age.classes, cut.off.dates)
-  cut.off.dates <- fix.end.dates(end.date, age.classes, cut.off.dates)
   cut.off.dates <- fix.missing.end.dates(end.date, age.classes, cut.off.dates)
+  cut.off.dates <- fix.start.dates(start.date, age.classes, cut.off.dates)
+  return(cut.off.dates)
 }
 
 # Calculate number of days spent in a category with a given start 
@@ -138,12 +124,31 @@ build.data <- function(data, ID.col, age.classes) {
   return(cow.data)
 }
 
-# --------------------------------------------------------
-# Overall function
+# Build output for age classes
+age.classes.table <- function(age.classes) {
+  age.table <- data.frame(array(dim = c(length(age.classes), 3)))
+  colnames(age.table) <- c("age class", "start month", "end month")
+  for(x in seq_along(age.classes)) {
+    age.table[x, "age class"] <- x
+    age.table[x, "start month"] <- age.classes[[x]][1]
+    age.table[x, "end month"] <- age.classes[[x]][2]
+  }
+  return(age.table)
+}
+
+# Getting the total days in each age class
+cow.totals <- function(cow.data) {
+  colSums(cow.data[, -ID.col])
+}
+
+# Overall cowsgopoo function
 # Input is a data frame with variables for 
 # ID of animal, date of birth, start and end dates of the 
-# period.
-# --------------------------------------------------------
+# period (dd/mm/yyyy), and age classes in months.
+# Outputs days in each age class for each individual plus
+# total days all individuals spent in each age class, age classes, 
+# start and end dates, total days in reporting period,
+# and total number of individuals.
 
 cowsgopoo <- function(data, ID, DOB, start.date, end.date, age.classes) {
   if (!is.data.frame(data)) 
@@ -175,40 +180,25 @@ cowsgopoo <- function(data, ID, DOB, start.date, end.date, age.classes) {
   for(ID in seq_along(data[, ID.col])) {
   
     # Get start and end cut off dates for three categories
-    cut.off.dates.list <- add.cut.off.dates(data, ID, DOB.col, start.date, end.date, age.classes)
+    cut.off.dates.list <- add.cut.off.dates(data, ID, DOB.col, start.date, end.date, 
+                                            age.classes, cut.off.dates)
 
     # Extract number of days in each class
     days.in.class <- fill.days.in.all.classes(cut.off.dates.list, age.classes)
 
     # Outputs
     cow.data$ID[ID] <- as.character(data[, ID.col][ID])
-    cow.data[ID, 2:(length(age.classes) + 1)] <- days.in.class$days.in.class 
+    cow.data[ID, 2:(length(age.classes) + 1)] <- days.in.class$days.in.class   
   }
-  return(cow.data)
+  # Overall outputs
+  cow.results <- list(results = cow.data, totals = cow.totals(cow.data), 
+                      age.classes = age.classes.table(age.classes), start.date = start.date, 
+                      end.date = end.date, reporting.period = end.date - start.date,
+                      number.individuals = length(unique(cow.data$ID))) 
+  return(cow.results)
 }
 
-#Faffing
-
-data <- myherd
-age.classes <- list(c(0, 3), c(3, 12), c(12, 24), c(24, 1000))
-start.date <- convert.date("01/01/2013")
-end.date <- convert.date("31/12/2013")
-ID.col <- 1
-DOB.col <- 2
-data[, DOB.col] <- convert.date(data[, DOB.col])
-
-cut.off.dates <- data.frame(array(dim = c(length(age.classes), 2)))
-colnames(cut.off.dates) <- c("start", "end")
-
-get.cut.off.dates(data, 3, DOB.col, start.date, end.date, 
-                              age.classes, cut.off.dates) 
-
-
-# ---------------------------
-# Official Example
-# ---------------------------
-
-source("cowsgopoo.R")
+# Example
 
 # Example dataset with IDs (cowID) a-d and random dates of birth (dob)
 myherd <- data.frame(cowID = c("a", "b", "c", "d"), 

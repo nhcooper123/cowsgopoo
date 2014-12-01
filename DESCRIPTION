@@ -1,9 +1,9 @@
 Package: cowsgopoo
 Title: cowsgopoo
-Description: N depo
+Description: Functions to calculate how many days an animal spends in each of several age classes, to help with estimating Nitrogen deposition on fields.
 Version: 0.1
-Author: Natalie Cooper <ncooper@tcd.ie>
-Maintainer: Natalie Cooper <ncooper@tcd.ie>
+Author: Natalie Cooper <nhcooper12@gmail.com>
+Maintainer: Natalie Cooper <nhcooper12@gmail.com>
 Depends:
     R (>= 2.10)
 License: GPL (>= 2)

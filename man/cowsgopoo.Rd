@@ -25,7 +25,7 @@ cowsgopoo(data, ID, DOB, start.date, end.date, age.classes}
 
 }
 \value{
-Outputs an table containing the number of days each animal was in each age class (\$results), the total number of days all animals spent in each age class (\$totals), a table of the age classes (\$age.classes), the start and end
+Outputs are a table containing the number of days each animal was in each age class (\$results), the total number of days all animals spent in each age class (\$totals), a table of the age classes input by the user (\$age.classes), the start and end
 dates of the reporting period, the number of days in the reporting period, and the number of individual animals in the analysis.
 }
 \description{

@@ -3,6 +3,8 @@
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
+\usepackage[osf]{mathpazo} % palatino
+\setcounter{secnumdepth}{0} 
 \usepackage{fixltx2e} % provides \textsubscript
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -90,8 +92,8 @@
 
 \begin{document}
 
-\title{cowsgopoo: Simple instructions for practitioners}
-\author{Natalie Cooper (ncooper@tcd.ie) and Sally Gadsdon}
+\title{cowsgopoo: Instructions for practitioners}
+\author{Natalie Cooper (nhcooper12@gmail.com)}
 \date{}
 \maketitle
 
@@ -109,24 +111,45 @@ Throughout, R code will be in shaded boxes:
 
 R output will be preceded by \texttt{\#\#} and important comments will be in boxes.
 
+\subsection{Installing cowsgopoo from GitHub}
+
 \begin{framed}
-To use cowsgopoo for the first time you will need to be connected to the internet. However, after the initial download you will be able to use it offline.
+You will need to be connected to the internet to do this step. However, after you install the \texttt{devtools} and \texttt{cowsgopoo} packages you will be able to use \texttt{cowsgoopoo} offline in the future.
 \end{framed}
 
-\section{Set up}
+You can install the \texttt{cowsgopoo} package via a website called GitHub as follows. First you will need to install a clever package called \texttt{devtools} that allows us to install things from GitHub.
 
-\subsection{Required data format}
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{install.packages}\NormalTok{(}\StringTok{"devtools"}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
 
-Your data set needs to contain two columns: an column with some form of identifier for each animal, and a column with the dates of birth of the animals. There can be other columns in the dataset as these will be ignored by the function. However, there should only be one row for each animal.\\
+You can then install \texttt{cowsgopoo} as follows
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{devtools::install_github}\NormalTok{(}\StringTok{"cowsgopoo"}\NormalTok{,} \DataTypeTok{username = }\StringTok{"nhcooper123"}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
 
-Dates of birth should be in the format: dd/mm/yyyy\\
+\subsection{Loading the cowsgopoo package in R}
 
-IDs can be any format.\\
+You've installed \texttt{cowsgopoo} but packages don't automatically get loaded
+into your R session. Instead you need to tell R to load them \textbf{every
+time} you start a new R session and want to use functions from these
+packages. To load the package \texttt{cowsgopoo} into your current R session:
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(cowsgopoo)}
+\end{Highlighting}
+\end{snugshade}
 
 \subsection{Making a folder and finding its path}
 
+Before we talk about data we first need to know where we are going to put it.
 Create a new folder which we'll call
-``RAnalyses''. Put your data into this folder. 
+``RAnalyses''. You should put your data into this folder. 
 You'll need to know what the \textbf{path} of the folder is. 
 For example on Natalie's Windows machine, the path is:
 
@@ -152,13 +175,21 @@ On Natalie's Mac the path is:
 It's a bit trickier to find the path on a Mac, so Google for help if you need it. 
 Note that the tilde \textasciitilde{} is a shorthand for /Users/Natalie. 
 
-\subsection{Reading your data into R}
+\subsection{Inputting your data}
+Your dataset needs to contain two columns: an column with some form of identifier for each animal, and a column with the dates of birth of the animals. There can be other columns in the dataset as these will be ignored by the function. However, there should only be \textbf{one row for each animal}.\\
 
-Next we need to load the data we are going to use for the analysis. R
-can read files in lots of formats, including comma-delimited and
+Dates of birth should be in the format: dd/mm/yyyy. IDs can be in any format.
+
+R can read files in lots of formats, including comma-delimited and
 tab-delimited files. Excel (and many other applications) can output
 files in this format (it's an option in the ``Save As'' dialog box
-under the ``File'' menu). Here let's assume you have a file called ``HerdData.txt''
+under the ``File'' menu). Here let's assume you have a tab-delimited 
+file called ``HerdData.txt'' that contains your data. You should put 
+your data into the ``RAnalyses'' folder you created above.
+
+\subsection{Reading your data into R}
+Next we need to load the data we are going to use for the analysis. 
+Here we have a file called ``HerdData.txt''
 which we are going to use. Load these data as follows. 
 
 \begin{framed}
@@ -168,8 +199,7 @@ containing the data on your computer.
 
 \begin{snugshade}
 \begin{Highlighting}[]
-\NormalTok{myherd <-}\StringTok{ }\KeywordTok{read.table}\NormalTok{(}\StringTok{"MYPATH/HerdData.txt"}\NormalTok{, }\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }
-                          \DataTypeTok{header =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{myherd <-}\StringTok{ }\KeywordTok{read.table}\NormalTok{(}\StringTok{"MYPATH/HerdData.txt"}\NormalTok{, }\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }\DataTypeTok{header =} \OtherTok{TRUE}\NormalTok{)}
 \end{Highlighting}
 \end{snugshade}
 
@@ -193,8 +223,9 @@ We can look at the data by typing:
 \end{snugshade}
 
 \begin{verbatim}
-## 'data.frame':    77 obs. of  8 variables:
-
+## data.frame': 4 obs. of  2 variables:
+##   $ cowID: Factor w/ 4 levels "a","b","c","d": 1 2 3 4
+##   $ dob  : Factor w/ 4 levels "01/11/2013","13/01/2013",..: 2 3 4 1
 \end{verbatim}
 
 This shows the structure of the data frame (this can be a really useful
@@ -205,63 +236,160 @@ so it's useful to check this.
 
 As you can see, the data contains the following variables: cowID and dob 
 
-\begin{snugshade}
-\begin{Highlighting}[]
-\KeywordTok{head}\NormalTok{(myherd)}
-\end{Highlighting}
-\end{snugshade}
+\subsection{Age classes}
 
-\begin{verbatim}
-##      Order      Family           Binomial AdultBodyMass_g GestationLen_d
-
-\end{verbatim}
-
-This gives you the first few rows of data along with the column
-headings.
+\texttt{cowsgopoo} is designed to work with a set of user defined age classes. So you can input whatever age classes you need for your forms. These must be in months (e.g. 0-3 months) but can overlap if desired (e.g. 0-3 months, 2-4 months etc.). These must be made into a list in R like this:
 
 \begin{snugshade}
 \begin{Highlighting}[]
-\KeywordTok{names}\NormalTok{(myherd)}
+\NormalTok{myclasses <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,} \DecValTok{3}\NormalTok{),} \KeywordTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{,} \DecValTok{12}\NormalTok{))}
 \end{Highlighting}
 \end{snugshade}
 
-\subsection{Downloading cowsgopoo from GitHub}
+The first number in each bracket is the start month, the second number is the end month. If you want to use classes such as 24 months and older you need to replace the end month with \texttt{Inf} which stands for infinity:
 
-You can install the cowsgopoo package via a website called GitHub. Note that once you've done this once, you don't need to do it ever again and you can use the code offline after this step.
-
-% FIX FIX FIX
 \begin{snugshade}
 \begin{Highlighting}[]
-\KeywordTok{install.packages}\NormalTok{(cowsgopoo)}
+\NormalTok{myclasses <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,} \DecValTok{24}\NormalTok{),} \KeywordTok{c}\NormalTok{(}\DecValTok{24}\NormalTok{,} \CharTok{Inf}\NormalTok{))}
 \end{Highlighting}
 \end{snugshade}
 
-\subsection{Loading the cowsgopoo package in R}
+\subsubsection{Reporting period}
+You will also need to know the start and end date of the reporting period. These should also be in the format dd/mm/yyyy and will be entered directly into the function. 
 
-You've installed cowsgopoo but packages don't automatically get loaded
-into your R session. Instead you need to tell R to load them \textbf{every
-time} you start a new R session and want to use functions from these
-packages. To load the package \texttt{cowsgopoo} into your current R session:
+\begin{framed}
+Note that the function will break if the end date is before any of the dates of birth of the animals in the dataset. If you want to look back at historical data remember to remove animals born after the reporting period from your dataset first.
+\end{framed}
 
+\subsection{Running a cowsgopoo analysis}
+
+These are only needed once per computer (unless you reinstall R for some reason):
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{install.packages}\NormalTok{(}\StringTok{"devtools"}\NormalTok{)}
+
+\KeywordTok{devtools::install_github}\NormalTok{(}\StringTok{"cowsgopoo"}\NormalTok{,} \DataTypeTok{username = }\StringTok{"nhcooper123"}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
+
+This is needed every time you start a new R session:
 \begin{snugshade}
 \begin{Highlighting}[]
 \KeywordTok{library}\NormalTok{(cowsgopoo)}
 \end{Highlighting}
 \end{snugshade}
 
-\section{Running a cowsgopoo analysis}
+First let's make an example dataset with IDs (cowID) a-d and random dates of birth (dob)
 
-\subsection{Setting your age classes}
+\begin{snugshade}
+\begin{Highlighting}[]
+\NormalTok{myherd <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{cowID =} \KeywordTok{c}\NormalTok{(}\StringTok{"a", "b", "c", "d"}\NormalTok{), }
+           \DataTypeTok{dob =} \KeywordTok{c}\NormalTok{(}\StringTok{"13/01/2013", "20/06/2013", "27/11/2010", "01/11/2013"}\NormalTok{))}
+\end{Highlighting}
+\end{snugshade}                   
 
-cowsgopoo is designed to work with a set of user defined age classes. So you can input whatever age classes you need for your forms. 
+\begin{framed}
+To use your own data you just need to make \texttt{myherd} represent your data by reading it into R as described in the above: 
+\begin{snugshade}
+\begin{Highlighting}[]
+\NormalTok{myherd <-}\StringTok{ }\KeywordTok{read.table}\NormalTok{(}\StringTok{"MYPATH/HerdData.txt"}\NormalTok{, }\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}t}\StringTok{"}\NormalTok{, }\DataTypeTok{header =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
+Remember to replace MYPATH with the path to your folder that contains the data.
+\end{framed}
 
-\subsection{Running an analysis}
+Next we make an example list of age classes of 0-3 months, 3-12 months, 12-24 months and over 24 months. 
+Note the use of Inf to indicate over 24 months.
 
+\begin{snugshade}
+\begin{Highlighting}[]
+\NormalTok{myclasses <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,} \DecValTok{3}\NormalTok{),} \KeywordTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{,} \DecValTok{12}\NormalTok{),} \KeywordTok{c}\NormalTok{(}\DecValTok{12}\NormalTok{,} \DecValTok{24}\NormalTok{),} \KeywordTok{c}\NormalTok{(}\DecValTok{24}\NormalTok{,} \CharTok{Inf}\NormalTok{))}
+\end{Highlighting}
+\end{snugshade}
 
-\subsection{Writing your output to a file}
+We can now run \texttt{cowsgopoo} as follows where \texttt{data} is the name of the dataset, \texttt{ID} is the name of the column with the ID/identifier for each animal, \texttt{DOB} is the column with the date of birth for each animal, \texttt{start} is the start date of the reporting period, \texttt{end} is the end date of the reporting period, and \texttt{age.classes} is the list of age classes we made above.
 
-You can save your output as a file, rather than seeing the results in your R window. This works the same as above but we give the results a name by using the <- function. We then tell R to write a file of this data. The data will appear in your folder "RAnalyses".
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{cowsgopoo}\NormalTok{(}\DataTypeTok{data =} \NormalTok{myherd, }\DataTypeTok{ID =} \StringTok{"cowID"}\NormalTok{, }\DataTypeTok{DOB =} \StringTok{"dob"}\NormalTok{, }\DataTypeTok{start =} \StringTok{"01/01/2013"}\NormalTok{, }
+          \DataTypeTok{end =} \StringTok{"31/12/2013"}\NormalTok{, }\DataTypeTok{age.classes =} \NormalTok{myclasses)}
+\end{Highlighting}
+\end{snugshade}
 
-This will create a .csv file that can be opened in Excel. Just right click and choose "Open With" and select Excel. Otherwise the file will open in your text editor.
+The output looks like this:
+
+\begin{verbatim}
+## $results
+##    ID age class 1 age class 2 age class 3 age class 4
+## 1  a          90         262           0           0
+## 2  b          92         102           0           0
+## 3  c           0           0           0         364
+## 4  d          60           0           0           0
+
+## $totals
+## age class 1 age class 2 age class 3 age class 4 
+##         242         364           0         364 
+
+## $age.classes
+##   age class start month end month
+## 1         1           0         3
+## 2         2           3        12
+## 3         3          12        24
+## 4         4          24       Inf
+
+## $start.date
+## [1] "2013-01-01"
+
+## $end.date
+## [1] "2013-12-31"
+
+## $reporting.period.days
+## Time difference of 364 days
+
+## $number.individuals
+## [1] 4
+\end{verbatim}
+
+The function outputs a table containing the number of days each animal was in each age class (\texttt{\$results}), the total number of days all animals spent in each age class (\texttt{\$totals}), a table of the age classes you input (\texttt{\$age.classes}), the start and end dates of the reporting period (\texttt{\$start.date} and \texttt{\$end.date}), the number of days in the reporting period (\texttt{\$reporting.period}), and the number of individual animals in the analysis (\texttt{\$number.individuals}).
+
+We can store the results using the \texttt{<-} function. For example, let's re-run the analysis and call the results \texttt{myresults}.
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\NormalTok{myresults <-}\StringTok{ }\KeywordTok{cowsgopoo}\NormalTok{(}\DataTypeTok{data =} \NormalTok{myherd, } \DataTypeTok{ID =} \StringTok{"cowID"}\NormalTok{, }\DataTypeTok{DOB =} \StringTok{"dob"}\NormalTok{, }
+                       \DataTypeTok{start =} \StringTok{"01/01/2013"}\NormalTok{, }\DataTypeTok{end =} \StringTok{"31/12/2013"}\NormalTok{, }
+                       \DataTypeTok{age.classes =} \NormalTok{myclasses)}
+\end{Highlighting}
+\end{snugshade}
+
+To look at all the results type in \texttt{myresults} and press enter. This will show the same results as above. To get just one of the results items you can use the \$ codes above. For example, if you only want to look at the total days all animals spend in each class you can use:
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\NormalTok{myresults\$totals}
+\end{Highlighting}
+\end{snugshade}
+
+The output will look like this:
+
+\begin{verbatim}
+## age class 1 age class 2 age class 3 age class 4 
+##         242         364           0         364 
+\end{verbatim}
+
+You can also save your output as a file, rather than seeing the results in your R window. This works the same as above but after we store the results using the \texttt{<-} function, we then tell R to write a file of this data. The data will appear in your folder defined by MYPATH
+
+\begin{framed}
+Remember to replace MYPATH with the path to your folder that contains the data.
+\end{framed}
+
+\begin{snugshade}
+\begin{Highlighting}[]
+\KeywordTok{write.table}\NormalTok{(}\DataTypeTok{file =} \StringTok{"MYPATH/MyResultsFile.csv"}\NormalTok{, myresults\$results, } \DataTypeTok{sep =} \StringTok{","}\NormalTok{, }
+            \DataTypeTok{quote =} \StringTok{FALSE}\NormalTok{, }\DataTypeTok{col.names =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{row.names =} \OtherTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{snugshade}
+
+This will create a .csv file that can be opened in Excel. Just right click and choose ``Open With'' and select Excel. Otherwise the file will open in your text editor.
 
 \end{document}

@@ -1,0 +1,9 @@
+Package: cowsgopoo
+Title: cowsgopoo
+Description: N depo
+Version: 0.1
+Author: Natalie Cooper <ncooper@tcd.ie>
+Maintainer: Natalie Cooper <ncooper@tcd.ie>
+Depends:
+    R (>= 2.10)
+License: GPL (>= 2)
